@@ -187,6 +187,19 @@ footer p{margin:4px 0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}.topic:hover,.shape:hover{transform:none}}
 </style>
 
+<style>/* 2026-11-17 device-test fixes */
+.seg button,.pill{min-height:44px}
+input[type=range]{min-height:44px}
+.box table.stats thead th{white-space:normal;vertical-align:bottom;line-height:1.25}
+.box table.stats th,.box table.stats td{padding-left:8px;padding-right:8px}
+.choices .pill{min-height:44px}
+.box table.stats td:nth-child(5){white-space:nowrap!important;min-width:0!important}
+@media (max-width:1100px){.box table.stats th,.box table.stats td{padding-left:4px;padding-right:4px}.box table.stats td{font-size:13px}.box table.stats th{font-size:12px}}
+.fb{scroll-margin:16px}
+#mHint{padding:8px 16px 0;margin:0!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .predict .eye{color:var(--ink)}}
+:root[data-theme="dark"] .predict .eye{color:var(--ink)}
+</style>
 </head>
 <body>
 <main class="wrap">
@@ -488,12 +501,12 @@ function describe(){
   box.innerHTML=gs.map(g=>`<div class="dgroup"><div class="dlabel" style="color:var(${g.c})">${g.name}</div><div class="choices" role="group" aria-label="${g.name} shape">${SHAPE_WORDS.map(([k,t])=>`<button type="button" class="pill" data-g="${g.k}" data-k="${k}" aria-pressed="${PICK[S.ds+g.k]===k}">${t}</button>`).join("")}</div><div class="fb" id="fb_${g.k}"></div></div>`).join("")+
    `<div style="align-self:end"><button type="button" class="btn primary" id="checkShape">Check my descriptions</button></div>`;
   box.querySelectorAll(".choices").forEach(c=>c.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;PICK[S.ds+b.dataset.g]=b.dataset.k;persist();[...c.children].forEach(x=>x.setAttribute("aria-pressed",x===b));$("fb_"+b.dataset.g).className="fb";$("fb_"+b.dataset.g).textContent=""}));
-  $("checkShape").addEventListener("click",()=>gs.forEach(g=>{const pick=PICK[S.ds+g.k],v=vals(g.k),fb=$("fb_"+g.k);if(!pick){fb.className="fb wait";fb.textContent="Pick a shape first.";return}
+  $("checkShape").addEventListener("click",()=>{setTimeout(()=>{const f=box.querySelector(".fb.ok,.fb.no,.fb.wait");if(f)f.scrollIntoView({block:"nearest"})},0);gs.forEach(g=>{const pick=PICK[S.ds+g.k],v=vals(g.k),fb=$("fb_"+g.k);if(!pick){fb.className="fb wait";fb.textContent="Pick a shape first.";return}
     const ans=cur().humps?"two":shapeOf(v),mn=fmt(mean(v)),me=fmt(median(v));
     const why=cur().humps?(pick==="two"?cur().humps:"Set the interval size to 20 and count the peaks."):pick==="two"&&ans!=="two"?`There is one main peak here. The mean (${mn}) and median (${me}) show which way it leans.`:ans==="right"?`The mean (${mn}) gets pulled above the median (${me}) by a few high values.`:ans==="left"?`The mean (${mn}) gets pulled below the median (${me}) by a few low values.`:`The mean (${mn}) and median (${me}) are close together.`;
     const small=!cur().humps&&(cur().sampling||v.length<30)&&ans!=="sym";
     if(small&&(pick===ans||pick==="sym")){fb.className="fb ok";fb.textContent=`Fair call. With only ${v.length} values the shape is hard to judge. ${why} Small samples often look lopsided by chance.`;return}
-    fb.className="fb "+(pick===ans?"ok":"no");fb.textContent=(pick===ans?"Nice, that matches the numbers. ":"Not quite. Look again. ")+why}));
+    fb.className="fb "+(pick===ans?"ok":"no");fb.textContent=(pick===ans?"Nice, that matches the numbers. ":"Not quite. Look again. ")+why})});
 }
 function raw(){
   const cols=cur().stats.map(s=>s[1]);
@@ -513,7 +526,8 @@ function syncUI(){
   $("n").value=S.n;$("nOut").textContent=S.n;$("drawCount").textContent=d.sampling?`Draws so far: ${S.draws}`:"";
 }
 const BASE={view:"stack",y:"count",mean:false,median:false,mode:false,regulars:false,showPop:false};
-function apply(set){const prevN=S.n,prevStat=S.stat;Object.assign(S,set);
+function apply(set){const prevN=S.n,prevStat=S.stat,prevView=S.view;Object.assign(S,set);
+  if(S.view!==prevView||S.stat!==prevStat)$("tip").textContent="Tap any bar to see what is inside it.";
   if(cur().sampling&&set.n!=null&&set.n!==prevN){drawSamples();load()}
   if(S.stat!==prevStat||set.regulars!=null)raw();
   syncUI();draw()}
@@ -533,7 +547,7 @@ function setupDS(){
   const d=cur();document.documentElement.dataset.ds=S.ds;
   restoring=true;
   Object.assign(S,{stat:d.stat,bin:d.bin,view:"stack",y:"count",mean:false,median:false,mode:false,regulars:false,showPop:false});
-  const r=rec(S.ds);if(r.bin!=null){Object.assign(S,{bin:r.bin,view:r.view||"stack",y:r.y||"count",stat:r.stat||d.stat,mean:!!r.mean,median:!!r.median,mode:!!r.mode,regulars:!!r.regulars,showPop:!!r.showPop});if(r.n)S.n=r.n;if(r.step!=null)S.step[S.ds]=r.step;if(r.desc)Object.entries(r.desc).forEach(([k,v])=>PICK[S.ds+k]=v)}
+  const r=rec(S.ds);if(r.bin!=null){Object.assign(S,{bin:Math.max(d.binMin||2,Math.min(d.binMax||40,+r.bin||d.bin)),view:["stack","overlay","g0","g1"].includes(r.view)?r.view:"stack",y:r.y||"count",stat:r.stat||d.stat,mean:!!r.mean,median:!!r.median,mode:!!r.mode,regulars:!!r.regulars,showPop:!!r.showPop});if(r.n)S.n=r.n;if(r.step!=null)S.step[S.ds]=Math.max(0,Math.min(d.steps.length-1,r.step|0));if(r.desc)Object.entries(r.desc).forEach(([k,v])=>PICK[S.ds+k]=v)}
   ["bin","binM"].forEach(i=>{$(i).min=d.binMin||2;$(i).max=d.binMax||40;$(i).step=d.binStep||1});
   $("dsQuestion").textContent=d.question;$("bannerIcon").innerHTML=ICON[S.ds];
   $("statSeg").innerHTML=d.stats.map(([v,t])=>`<button type="button" data-stat="${v}">${t}</button>`).join("");$("statGroup").hidden=d.stats.length<2;
@@ -549,7 +563,7 @@ function setupDS(){
   $("predict").hidden=!!S.seen[S.ds];
   [...$("tabs").children].forEach(b=>b.setAttribute("aria-selected",b.dataset.ds===S.ds));
   renderStep();draw();
-  if(r.pred&&!S.seen[S.ds])reveal(r.pred==="skip"?null:r.pred);
+  if(r.pred&&!S.seen[S.ds])reveal(d.predict.opts.some(o=>o[0]===r.pred)?r.pred:null);
   restoring=false;persist();applyLit();
 }
 function reveal(k){const d=cur(),p=d.predict;let html="";
