@@ -199,6 +199,39 @@ input[type=range]{min-height:44px}
 #mHint{padding:8px 16px 0;margin:0!important}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .predict .eye{color:var(--ink)}}
 :root[data-theme="dark"] .predict .eye{color:var(--ink)}
+.addbox textarea,.entry textarea{width:100%;box-sizing:border-box;font:inherit;font-size:15px;color:var(--ink);background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:8px 10px;resize:vertical;min-height:64px}
+.addbox textarea:focus,.entry textarea:focus,.wname input:focus{outline:3px solid var(--focus,#1F5FAF);outline-offset:1px}
+.jump{font-weight:600;color:var(--ink);text-underline-offset:3px;padding:10px 6px;min-height:44px;display:inline-flex;align-items:center}
+.work{margin-top:14px;background:var(--panel);border-radius:var(--r);box-shadow:var(--shadow);padding:16px}
+.whead{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.whead h2{margin:0;font-family:var(--display);font-size:22px}
+.wname{font-size:14px;font-weight:600;display:flex;gap:8px;align-items:center}
+.wname input{font:inherit;font-size:15px;color:var(--ink);background:var(--panel);border:2px solid var(--line);border-radius:10px;padding:8px 10px;min-height:44px;box-sizing:border-box;width:min(260px,60vw)}
+.wlead{margin:6px 0 10px}
+.wcheck{list-style:none;margin:0 0 12px;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:6px}
+.wcheck li{display:flex;gap:8px;align-items:flex-start;font-size:14px;border:2px solid var(--line);border-radius:12px;padding:8px 10px;color:var(--muted)}
+.wcheck li.on{border-color:var(--ok,#1B7340);color:var(--ink);background:var(--ok-bg,#E4F4EA)}
+.wcheck .mk{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid currentColor;display:inline-flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;line-height:1}
+.wcheck .oc{font-family:var(--mono);font-size:12px;margin-left:4px}
+.entry{border:2px solid var(--line);border-radius:14px;padding:12px;margin-top:10px;display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:14px;break-inside:avoid}
+.entry .pic svg{width:100%;height:auto;display:block;background:#fff;border-radius:8px}
+.entry h3{margin:0 0 2px;font-size:16px;font-family:var(--display)}
+.entry .cap{font-size:13px;color:var(--muted);margin:0 0 8px}
+.entry .sh{font-size:14px;margin:0 0 8px}
+.entry .erow{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:8px}
+.entry .pnote{display:none;white-space:pre-wrap;font-size:15px;border-left:4px solid var(--line);padding:2px 0 2px 10px;margin:0}
+.wbtns{display:flex;flex-wrap:wrap;gap:18px;margin-top:14px}
+.wbtns h3{margin:0 0 6px;font-size:14px}
+@media (max-width:700px){.entry{grid-template-columns:1fr}}
+@media print{
+  body.printwork main>*:not(#work){display:none!important}
+  body.printwork .noprint,body.printwork .entry textarea,body.printwork .entry .erow{display:none!important}
+  body.printwork .entry .pnote{display:block}
+  body.printwork .work{box-shadow:none;padding:0;margin:0}
+  body.printwork .entry{grid-template-columns:300px 1fr}
+  body.printwork{background:#fff}
+}
+footer a{color:var(--ink);font-weight:600;text-underline-offset:3px;display:inline-flex;align-items:center;min-height:44px;font-size:15px}
 </style>
 </head>
 <body>
@@ -313,6 +346,17 @@ input[type=range]{min-height:44px}
       <div class="tip" id="tip" aria-live="polite">Tap any bar to see what is inside it.</div>
       <div id="youSaid"></div>
 
+      <div class="box addbox" id="addBox">
+        <h3>Save this graph to My work</h3>
+        <label class="hint" for="addNote" style="margin:0 0 6px;display:block">What does this graph show? Write one or two sentences.</label>
+        <textarea id="addNote" rows="2" maxlength="600"></textarea>
+        <div class="seg" style="margin-top:8px;align-items:center">
+          <button type="button" class="btn theme" id="addWork">Add this graph to My work</button>
+          <a class="jump" href="#work" id="jumpWork">See My work</a>
+        </div>
+        <p class="hint" id="addStatus" role="status"></p>
+      </div>
+
       <div class="box" data-o="S1">
         <h3>Describe the shape<span class="tag t-only">S1</span></h3>
         <div class="describe" id="describe"></div>
@@ -332,6 +376,34 @@ input[type=range]{min-height:44px}
       </div>
     </section>
   </div>
+
+  <section class="work" id="work" aria-labelledby="workTitle">
+    <div class="whead">
+      <h2 id="workTitle">My work</h2>
+      <label class="wname noprint-label">Name <input id="wName" type="text" autocomplete="off" maxlength="60" placeholder="Goes on your saved file only"></label>
+    </div>
+    <p class="hint wlead" id="workLead"></p>
+    <ul class="wcheck" id="wCheck" aria-label="What my work shows"></ul>
+    <div id="wList"></div>
+    <div class="wbtns noprint">
+      <div>
+        <h3>Hand it in</h3>
+        <div class="seg">
+          <button type="button" class="btn primary" id="wPng">Save as a picture</button>
+          <button type="button" class="btn" id="wPrint">Print or save as PDF</button>
+        </div>
+      </div>
+      <div>
+        <h3>Keep working on another device</h3>
+        <div class="seg">
+          <button type="button" class="btn" id="wFile">Save a work file</button>
+          <button type="button" class="btn" id="wOpen">Open a work file</button>
+          <input type="file" id="wOpenInput" accept=".json,application/json" hidden aria-label="Choose a work file to open">
+        </div>
+      </div>
+    </div>
+    <p class="hint noprint" id="wStatus" role="status"></p>
+  </section>
 
   <details class="raw">
     <summary id="rawTitle">See all the data</summary>
@@ -555,7 +627,7 @@ function setupDS(){
   $("filterGroup").hidden=!d.filter;$("sampleGroup").hidden=!d.sampling;
   if(d.sampling&&!SAMPLE.A.length)drawSamples();
   load();raw();syncUI();
-  $("foot").innerHTML=`<p>${d.short}</p><p class="t-only">${d.foot}</p><p class="t-only">Built for the Math 8 team. No logins, no tracking. Your graph settings stay on this device only.</p>`;
+  $("foot").innerHTML=`<p><a href="../bank/">Next: pick your own data in the Data Bank</a></p><p>${d.short}</p><p class="t-only">Link straight to this topic: ${location.origin+location.pathname}#${S.ds} (add -3 to open at step 3).</p><p class="t-only">${d.foot}</p><p class="t-only">Built for the Math 8 team. No logins, no tracking. Your graph settings stay on this device only.</p>`;
   $("tip").textContent="Tap any bar to see what is inside it.";
   $("youSaid").innerHTML=S.seen[S.ds]?S.seen[S.ds].html:"";
   const p=d.predict;$("pTitle").textContent=p.title;$("pText").textContent=p.text;
@@ -564,7 +636,7 @@ function setupDS(){
   [...$("tabs").children].forEach(b=>b.setAttribute("aria-selected",b.dataset.ds===S.ds));
   renderStep();draw();
   if(r.pred&&!S.seen[S.ds])reveal(d.predict.opts.some(o=>o[0]===r.pred)?r.pred:null);
-  restoring=false;persist();applyLit();
+  restoring=false;persist();applyLit();renderWork();
 }
 function reveal(k){const d=cur(),p=d.predict;let html="";
   if(k){const lab=p.opts.find(o=>o[0]===k)[1].toLowerCase();
@@ -575,7 +647,7 @@ function reveal(k){const d=cur(),p=d.predict;let html="";
   if(d.guided&&!S.step[S.ds]&&!restoring)goStep(0,true);persist()}
 
 $("tabs").innerHTML=Object.entries(DS).map(([k,d])=>`<button type="button" class="topic" role="tab" data-ds="${k}" aria-selected="false"><span class="ic" aria-hidden="true">${ICON[k]}</span><span><b>${d.tab}</b><small>${d.sub}</small></span></button>`).join("");
-$("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;S.ds=b.dataset.ds;setupDS()});
+$("tabs").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;S.ds=b.dataset.ds;setupDS();try{history.replaceState(null,"","#"+S.ds)}catch(_){}});
 $("olist").innerHTML=OUT.map(([k,t])=>`<button type="button" class="ochip" data-k="${k}" aria-pressed="false"><b>${k}</b>${t}</button>`).join("");
 $("olist").addEventListener("click",e=>{const b=e.target.closest(".ochip");if(!b)return;S.lit=S.lit===b.dataset.k?null:b.dataset.k;applyLit()});
 function applyLit(){document.querySelectorAll(".lit").forEach(e=>e.classList.remove("lit"));[...$("olist").children].forEach(c=>c.setAttribute("aria-pressed",c.dataset.k===S.lit));
@@ -616,12 +688,111 @@ function persist(){if(restoring||!P)return;const r=rec(S.ds);
   const desc={};cur().groups.forEach(g=>{if(PICK[S.ds+g.k])desc[g.k]=PICK[S.ds+g.k]});r.desc=desc;
   P.ds=S.ds;$("saveStatus").textContent=store.set(P)?"This device remembers your graph and your guess for next class.":"This browser is not saving. Write your interval size on your sheet."}
 let armed=null;$("resetAll").addEventListener("click",e=>{const b=e.currentTarget;
-  if(!armed){b.textContent="Tap again to clear";armed=setTimeout(()=>{armed=null;b.textContent="Clear this device"},4000);return}
+  if(!armed){b.textContent=WORK.length?"Tap again to clear My work too":"Tap again to clear";armed=setTimeout(()=>{armed=null;b.textContent="Clear this device"},4000);return}
   clearTimeout(armed);armed=null;b.textContent="Clear this device";
-  store.clear();P={v:1,ds:"pizza",sets:{}};S.seen={};S.step={};S.done={};Object.keys(PICK).forEach(k=>delete PICK[k]);S.ds="pizza";S.n=20;SAMPLE={A:[],B:[]};S.draws=0;setupDS()});
+  store.clear();WORK=[];try{localStorage.removeItem(WKEY)}catch(_){}$("addNote").value="";$("addStatus").textContent="";$("wStatus").textContent="";P={v:1,ds:"pizza",sets:{}};S.seen={};S.step={};S.done={};Object.keys(PICK).forEach(k=>delete PICK[k]);S.ds="pizza";S.n=20;SAMPLE={A:[],B:[]};S.draws=0;setupDS()});
+
+/* ---- My work: saved graphs, the student's own notes and an outcome checklist. Kept in this browser only until the student saves a file. ---- */
+const WKEY="shapeOfTheDataLab.work.v1",WMAX=12;
+let WORK=[];try{const w=JSON.parse(localStorage.getItem(WKEY)||"[]");if(Array.isArray(w))WORK=w.filter(validEntry)}catch(e){}
+function validEntry(e){return e&&typeof e==="object"&&typeof e.id==="string"&&DS[e.ds]&&typeof e.svg==="string"&&typeof e.cap==="string"}
+function saveWork(){try{localStorage.setItem(WKEY,JSON.stringify(WORK));return true}catch(e){return false}}
+const escH=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+const OUT_KID=[["S3","I built a histogram with equal intervals"],["S1","I described the shape of a distribution"],["S2","I changed the interval size and saw the shape change"],["S4","I compared two groups or two samples"],["S5","I used mean, median or mode and explained my choice"]];
+function cleanSvg(str){try{const d=new DOMParser().parseFromString(str,"image/svg+xml"),r=d.documentElement;if(!r||r.nodeName!=="svg"||d.querySelector("parsererror"))return"";
+  const OKT=new Set(["svg","rect","line","text"]),OKA=new Set(["viewBox","xmlns","x","y","x1","x2","y1","y2","width","height","fill","stroke","stroke-width","stroke-dasharray","text-anchor","transform","font-size","font-weight","font-family"]);
+  const scrub=n=>[...n.attributes].forEach(a=>{if(!OKA.has(a.name)||/url\s*\(|javascript:|data:|<|&/i.test(a.value))n.removeAttribute(a.name)});
+  (function walk(n){[...n.children].forEach(c=>{if(!OKT.has(c.nodeName)||c.namespaceURI!==NS){c.remove();return}scrub(c);walk(c)})})(r);scrub(r);r.setAttribute("xmlns",NS);
+  return new XMLSerializer().serializeToString(r)}catch(e){return""}}
+function snapshot(){const root=document.documentElement,had=root.getAttribute("data-theme");root.setAttribute("data-theme","light");draw();
+  const src=$("chart"),c=src.cloneNode(true),a=[...src.querySelectorAll("*")],b=[...c.querySelectorAll("*")];
+  a.forEach((e,i)=>{const t=b[i];if(e.tagName==="text"){const cs=getComputedStyle(e);t.setAttribute("fill",cs.fill);t.setAttribute("font-size",cs.fontSize);t.setAttribute("font-weight",cs.fontWeight);t.setAttribute("font-family","Arial, Helvetica, sans-serif")}
+    ["class","style","tabindex","role","aria-label"].forEach(k=>t.removeAttribute(k))});
+  ["class","style","role","aria-label","id"].forEach(k=>c.removeAttribute(k));const vb=src.getAttribute("viewBox").split(" ");c.setAttribute("width",vb[2]);c.setAttribute("height",vb[3]);
+  const out=cleanSvg(new XMLSerializer().serializeToString(c));
+  if(had==null)root.removeAttribute("data-theme");else root.setAttribute("data-theme",had);draw();return out}
+function addWork(){
+  if(!$("predict").hidden){$("addStatus").textContent="Make your prediction first, then save the graph.";return}
+  if(WORK.length>=WMAX){$("addStatus").textContent=`My work is full (${WMAX} graphs). Remove one first.`;return}
+  const d=cur(),vg=visibleGroups(),names=d.groups.filter(g=>vg.includes(g.k)).map(g=>g.name);
+  const viewLab={stack:"Side by side",overlay:"On top",g0:d.groups[0].name,g1:d.groups[1].name}[S.view];
+  const ms=[S.mean&&"mean",S.median&&"median",S.mode&&"mode"].filter(Boolean);
+  const cap=[statLabel(),`interval size ${S.bin}`,viewLab,S.y==="pct"?"Percent":"Count",ms.length?ms.join(", ")+" shown":"",d.filter&&S.regulars?"Regulars only":"",d.sampling?`samples of ${S.n}`:"",d.sampling&&S.showPop?"with all 486":""].filter(Boolean).join(" · ");
+  const shape=d.groups.filter(g=>vg.includes(g.k)&&PICK[S.ds+g.k]).map(g=>{const v=vals(g.k),pick=PICK[S.ds+g.k],ans=d.humps?"two":shapeOf(v),small=!d.humps&&(d.sampling||v.length<30)&&ans!=="sym";
+    return {g:g.name,pick:SHAPE_WORDS.find(w=>w[0]===pick)[1],ok:pick===ans||(small&&pick==="sym")}});
+  const svg=snapshot();if(!svg){$("addStatus").textContent="That graph could not be saved. Try again.";return}
+  WORK.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6),ds:S.ds,topic:d.tab,stat:S.stat,bin:S.bin,two:(S.view==="stack"||S.view==="overlay")&&names.length>1,measures:ms,cap,shape,svg,note:$("addNote").value.trim(),t:new Date().toISOString().slice(0,10)});
+  const kept=saveWork();$("addNote").value="";renderWork();
+  $("addStatus").textContent=`Added. My work has ${WORK.length} ${WORK.length>1?"graphs":"graph"}.`+(kept?"":" This browser is not saving, so save a picture or a work file before you close the page.")}
+function evidence(){const ev={S1:[],S2:[],S3:[],S4:[],S5:[]};
+  WORK.forEach((e,i)=>{const n=i+1;ev.S3.push(n);if(e.shape&&e.shape.length)ev.S1.push(n);if(e.two)ev.S4.push(n);if(e.measures&&e.measures.length&&e.note)ev.S5.push(n);
+    if(WORK.some(o=>o!==e&&o.ds===e.ds&&o.stat===e.stat&&o.bin!==e.bin))ev.S2.push(n)});return ev}
+function renderWork(){
+  const ev=evidence();
+  $("workLead").textContent=WORK.length?"Check your sentences, then hand it in. Your work is saved on this device as you go.":"Nothing here yet. Set up a graph, write what it shows, and press Add this graph to My work.";
+  $("wCheck").innerHTML=OUT_KID.map(([k,t])=>`<li class="${ev[k].length?"on":""}"><span class="mk" aria-hidden="true">${ev[k].length?"&#10003;":""}</span><span>${t}<span class="oc t-only">${k}</span>${ev[k].length?`<br><small>Graph ${ev[k].join(", ")}</small>`:`<br><small>Not yet</small>`}</span></li>`).join("");
+  $("wList").innerHTML=WORK.map((e,i)=>`<article class="entry" data-id="${escH(e.id)}"><div class="pic">${cleanSvg(e.svg)}</div><div>
+    <h3>Graph ${i+1}: ${escH(e.topic)}</h3><p class="cap">${escH(e.cap)} · ${escH(e.t||"")}</p>
+    ${(e.shape||[]).length?`<p class="sh">${e.shape.map(x=>`Shape of ${escH(x.g)}: <b>${escH(x.pick)}</b> (${x.ok?"matches the data":"does not match the data"})`).join("<br>")}</p>`:""}
+    <label class="hint noprint" for="n_${escH(e.id)}" style="display:block;margin:0 0 4px">What this graph shows</label>
+    <textarea id="n_${escH(e.id)}" rows="3" maxlength="600"></textarea><p class="pnote"></p>
+    <div class="erow"><span class="hint" style="margin:0"></span><button type="button" class="btn" data-rm="${escH(e.id)}">Remove</button></div></div></article>`).join("");
+  WORK.forEach(e=>{const t=document.getElementById("n_"+e.id);if(t){t.value=e.note||"";t.nextElementSibling.textContent=e.note||"(nothing written)"}});
+  $("jumpWork").textContent=WORK.length?`See My work (${WORK.length})`:"See My work";
+  [$("wPng"),$("wPrint"),$("wFile")].forEach(b=>b.disabled=!WORK.length)}
+$("addWork").addEventListener("click",addWork);
+$("wList").addEventListener("input",e=>{const t=e.target.closest("textarea");if(!t)return;const en=WORK.find(x=>"n_"+x.id===t.id);if(!en)return;en.note=t.value.trim();t.nextElementSibling.textContent=en.note||"(nothing written)";saveWork();
+  const ev=evidence();[...$("wCheck").children].forEach((li,i)=>{const k=OUT_KID[i][0];li.className=ev[k].length?"on":"";li.querySelector(".mk").innerHTML=ev[k].length?"&#10003;":"";li.querySelector("small").textContent=ev[k].length?"Graph "+ev[k].join(", "):"Not yet"})});
+let rmArmed=null;$("wList").addEventListener("click",e=>{const b=e.target.closest("button[data-rm]");if(!b)return;
+  if(rmArmed!==b.dataset.rm){rmArmed=b.dataset.rm;b.textContent="Tap again to remove";setTimeout(()=>{if(rmArmed===b.dataset.rm){rmArmed=null;if(b.isConnected)b.textContent="Remove"}},4000);return}
+  rmArmed=null;WORK=WORK.filter(x=>x.id!==b.dataset.rm);saveWork();renderWork();$("wStatus").textContent="Graph removed."});
+function fileName(ext){const n=$("wName").value.trim().replace(/[^\p{L}\p{N} _-]/gu,"").replace(/\s+/g,"-").slice(0,40);return `shape-of-the-data-${n?n+"-":""}${new Date().toISOString().slice(0,10)}.${ext}`}
+async function deliver(blob,name,what){
+  try{const f=new File([blob],name,{type:blob.type});if(matchMedia("(pointer:coarse)").matches&&navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"Shape of the Data: my work"});$("wStatus").textContent=`${what} ready. Choose where to save or send it.`;return}}
+  catch(e){if(e&&e.name==="AbortError"){$("wStatus").textContent="Nothing was saved.";return}}
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  $("wStatus").textContent=`${what} saved as ${name}. Look in your Downloads or Files, then upload it where your teacher asked.`}
+function loadImg(svg){return new Promise(res=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>res(null);im.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg)})}
+async function workPng(){
+  $("wStatus").textContent="Making your picture...";
+  const W=1000,PAD=36,cv=document.createElement("canvas"),x=cv.getContext("2d"),F="Arial, Helvetica, sans-serif";
+  const wrap=(t,font,maxw)=>{x.font=font;const out=[];String(t).split(/\n/).forEach(par=>{let line="";par.split(/\s+/).forEach(w=>{const tt=line?line+" "+w:w;if(x.measureText(tt).width>maxw&&line){out.push(line);line=w}else line=tt});out.push(line)});return out};
+  const ops=[],txt=(t,font,color,lh,indent=0)=>wrap(t,font,W-2*PAD-indent).forEach(l=>ops.push({h:lh,d:y=>{x.font=font;x.fillStyle=color;x.fillText(l,PAD+indent,y+lh*0.75)}})),gap=h=>ops.push({h,d:()=>{}});
+  const ev=evidence(),nm=$("wName").value.trim();
+  txt("Shape of the Data: my work","bold 30px "+F,"#1B1F2A",40);
+  txt(`${nm?"Name: "+nm+"  ·  ":""}Saved ${new Date().toISOString().slice(0,10)}`,"16px "+F,"#5B6170",24);gap(10);
+  OUT_KID.forEach(([k,t])=>txt(`${ev[k].length?"[x]":"[  ]"} ${t} (${k})${ev[k].length?": graph "+ev[k].join(", "):": not yet"}`,"16px "+F,ev[k].length?"#1B1F2A":"#5B6170",24));gap(14);
+  for(let i=0;i<WORK.length;i++){const e=WORK[i],im=await loadImg(cleanSvg(e.svg));
+    ops.push({h:16,d:y=>{x.fillStyle="#E2DED5";x.fillRect(PAD,y+4,W-2*PAD,2)}});
+    txt(`Graph ${i+1}: ${e.topic}`,"bold 20px "+F,"#1B1F2A",30);txt(`${e.cap} · ${e.t||""}`,"14px "+F,"#5B6170",20);gap(6);
+    if(im){const iw=Math.min(W-2*PAD,640),ih=Math.round(iw*im.height/im.width);ops.push({h:ih+10,d:y=>x.drawImage(im,PAD,y,iw,ih)})}
+    (e.shape||[]).forEach(s=>txt(`Shape of ${s.g}: ${s.pick} (${s.ok?"matches the data":"does not match the data"})`,"16px "+F,"#1B1F2A",24));
+    txt("What this graph shows:","bold 15px "+F,"#1B1F2A",24);txt(e.note||"(nothing written)","16px "+F,"#1B1F2A",24,12);gap(12)}
+  const H=ops.reduce((a,o)=>a+o.h,2*PAD);cv.width=W;cv.height=H;x.fillStyle="#fff";x.fillRect(0,0,W,H);let y=PAD;ops.forEach(o=>{o.d(y);y+=o.h});
+  const blob=await new Promise(r=>cv.toBlob(r,"image/png"));if(!blob){$("wStatus").textContent="The picture could not be made. Use Print or save as PDF instead.";return}
+  await deliver(blob,fileName("png"),"Picture")}
+function printWork(){const root=document.documentElement,had=root.getAttribute("data-theme");root.setAttribute("data-theme","light");document.body.classList.add("printwork");
+  let over=false;const done=()=>{if(over)return;over=true;document.body.classList.remove("printwork");if(had==null)root.removeAttribute("data-theme");else root.setAttribute("data-theme",had);window.removeEventListener("afterprint",done)};
+  window.addEventListener("afterprint",done);setTimeout(done,120000);setTimeout(()=>window.print(),60)}
+function workFile(){deliver(new Blob([JSON.stringify({app:"shape-of-the-data-lab",v:1,saved:new Date().toISOString(),work:WORK})],{type:"application/json"}),fileName("json"),"Work file")}
+function openWork(file){const r=new FileReader();r.onerror=()=>{$("wStatus").textContent="That file could not be read."};
+  r.onload=()=>{let d=null;try{d=JSON.parse(r.result)}catch(e){}
+    if(!d||d.app!=="shape-of-the-data-lab"||!Array.isArray(d.work)){$("wStatus").textContent="That is not a Shape of the Data work file.";return}
+    const have=new Set(WORK.map(e=>e.id));let added=0;
+    d.work.filter(validEntry).forEach(e=>{if(have.has(e.id)||WORK.length>=WMAX)return;const svg=cleanSvg(e.svg);if(!svg)return;
+      WORK.push({id:String(e.id).replace(/[^a-z0-9]/gi,"").slice(0,24)||Date.now().toString(36),ds:e.ds,topic:DS[e.ds].tab,stat:String(e.stat||""),bin:+e.bin||0,two:!!e.two,measures:(Array.isArray(e.measures)?e.measures:[]).filter(m=>["mean","median","mode"].includes(m)),cap:String(e.cap).slice(0,300),
+        shape:(Array.isArray(e.shape)?e.shape:[]).slice(0,2).map(s=>({g:String(s.g||"").slice(0,40),pick:String(s.pick||"").slice(0,40),ok:!!s.ok})),svg,note:String(e.note||"").slice(0,600),t:String(e.t||"").slice(0,10)});added++});
+    saveWork();renderWork();$("wStatus").textContent=added?`Opened ${added} ${added>1?"graphs":"graph"} from your work file.`:"Nothing new in that file."};
+  r.readAsText(file)}
+$("wPng").addEventListener("click",workPng);$("wPrint").addEventListener("click",printWork);$("wFile").addEventListener("click",workFile);
+$("wOpen").addEventListener("click",()=>$("wOpenInput").click());
+$("wOpenInput").addEventListener("change",e=>{const f=e.target.files[0];if(f)openWork(f);e.target.value=""});
+function fromHash(){const m=location.hash.slice(1).match(/^([a-z]+)(?:-(\d+))?$/);return m&&DS[m[1]]?{ds:m[1],step:m[2]?+m[2]:0}:null}
+window.addEventListener("hashchange",()=>{const h=fromHash();if(!h)return;if(h.ds!==S.ds){S.ds=h.ds;setupDS()}if(h.step)goStep(h.step-1,false)});
 (function(){const x=store.get();if(x&&x.v===1&&x.sets&&DS[x.ds]){P=x;S.ds=x.ds}})();
+const H0=fromHash();if(H0)S.ds=H0.ds;
 let tv=false;try{tv=localStorage.getItem("sdl-teacher")==="1"}catch(e){}
-setTeacher(tv);setupDS();
+setTeacher(tv);setupDS();if(H0&&H0.step)goStep(H0.step-1,false);
 </script>
 
 </body>
